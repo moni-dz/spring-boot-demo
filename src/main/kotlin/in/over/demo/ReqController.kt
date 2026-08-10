@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -25,6 +26,21 @@ class ReqController(private val service: TimeRecordService) {
         val recordToDelete = service.records.find { it.id == id }
         service.records.remove(recordToDelete)
         return ResponseEntity.ok(recordToDelete)
+    }
+
+    @PutMapping
+    fun editRecord(
+        @RequestParam id: Long,
+        @RequestBody timeRecord: PartialTimeRecord,
+    ): ResponseEntity<TimeRecord> {
+        service.records.find { it.id == id }?.let { record ->
+            timeRecord.timeInEpoch?.let { record.timeInEpoch = it }
+            timeRecord.timeOutEpoch?.let { record.timeOutEpoch = it }
+
+            return ResponseEntity.ok(record)
+        }
+
+        return ResponseEntity.notFound().build()
     }
 
 
