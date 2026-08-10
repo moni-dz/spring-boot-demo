@@ -1,10 +1,12 @@
 package `in`.over.demo
 
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import kotlin.time.Clock
 
@@ -17,6 +19,13 @@ class ReqController(private val service: TimeRecordService) {
     @GetMapping
 
     fun listRecords() = service.records
+
+    @DeleteMapping
+    fun deleteRecord(@RequestParam id: Long): ResponseEntity<TimeRecord> {
+        val recordToDelete = service.records.find { it.id == id }
+        service.records.remove(recordToDelete)
+        return ResponseEntity.ok(recordToDelete)
+    }
 
 
     @PostMapping("/time-in")
