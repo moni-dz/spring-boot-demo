@@ -30,4 +30,14 @@ class ReqController(private val service: TimeRecordService) {
         val record = service.insert(TimeRecord(id, name, Clock.System.now().epochSeconds, null))
         return ResponseEntity.ok(record)
     }
+
+    @PostMapping("/time-out")
+    fun timeOut(@RequestBody name: String): ResponseEntity<TimeRecord> {
+        service.records.findLast { it.name == name && it.timeOutEpoch == null }?.let {
+            it.timeOutEpoch = Clock.System.now().epochSeconds
+            return ResponseEntity.ok(it)
+        }
+
+        return ResponseEntity.notFound().build()
+    }
 }
