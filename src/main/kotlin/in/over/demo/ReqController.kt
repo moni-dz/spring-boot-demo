@@ -1,8 +1,12 @@
 package `in`.over.demo
 
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import kotlin.time.Clock
 
 @RestController
 @RequestMapping("/records")
@@ -11,5 +15,19 @@ class ReqController(private val service: TimeRecordService) {
     fun health() = "Hello!"
 
     @GetMapping
+
     fun listRecords() = service.records
+
+
+    @PostMapping("/time-in")
+    fun timeIn(@RequestBody name: String): ResponseEntity<TimeRecord> {
+        val id = try {
+            service.records.maxOf { it.id } + 1
+        } catch (_: NoSuchElementException) {
+            0
+        }
+
+        val record = service.insert(TimeRecord(id, name, Clock.System.now().epochSeconds, null))
+        return ResponseEntity.ok(record)
+    }
 }
