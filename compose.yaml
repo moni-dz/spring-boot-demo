@@ -1,0 +1,20 @@
+services:
+  mysql:
+    image: mysql:9.7.1
+    environment:
+      MYSQL_DATABASE: spring_boot_demo
+      MYSQL_USER: ${DB_USERNAME:-demo}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-demo}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:

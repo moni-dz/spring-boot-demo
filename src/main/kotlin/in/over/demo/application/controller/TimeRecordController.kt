@@ -1,6 +1,6 @@
 package `in`.over.demo.application.controller
 
-import `in`.over.demo.domain.model.TimeRecordDTO
+import `in`.over.demo.application.dto.TimeRecordDTO
 import `in`.over.demo.application.mapper.TimeRecordMapper
 import `in`.over.demo.domain.service.ITimeRecordService
 import org.springframework.http.ResponseEntity
