@@ -1,7 +1,7 @@
 package `in`.over.demo
 
 import `in`.over.demo.domain.model.TimeRecord
-import `in`.over.demo.domain.service.TimeRecordService
+import `in`.over.demo.domain.service.ITimeRecordService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +28,7 @@ class TimeRecordApplicationTests {
     private lateinit var appContext: WebApplicationContext
 
     @Autowired
-    private lateinit var service: TimeRecordService
+    private lateinit var service: ITimeRecordService
 
     private lateinit var mockMvc: MockMvc
 
