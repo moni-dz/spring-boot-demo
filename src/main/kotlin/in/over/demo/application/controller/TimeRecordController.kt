@@ -1,8 +1,9 @@
 package `in`.over.demo.application.controller
 
 import `in`.over.demo.application.dto.TimeRecordDTO
+import `in`.over.demo.application.dto.UpdateTimeRecordDTO
 import `in`.over.demo.application.mapper.TimeRecordMapper
-import `in`.over.demo.domain.service.ITimeRecordService
+import `in`.over.demo.domain.service.TimeRecordService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,16 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-/**
- * @property timeInEpoch time-in in Unix epoch seconds
- * @property timeOutEpoch time-out in Unix epoch seconds
- */
-data class PartialTimeRecord(var timeInEpoch: Long?, var timeOutEpoch: Long?)
-
 @RestController
 @RequestMapping("/records")
 class TimeRecordController(
-    private val service: ITimeRecordService,
+    private val service: TimeRecordService,
     private val mapper: TimeRecordMapper,
 ) {
     @RequestMapping("/status")
@@ -40,10 +35,9 @@ class TimeRecordController(
     @PutMapping
     fun editRecord(
         @RequestParam id: Long,
-        @RequestBody timeRecord: PartialTimeRecord,
+        @RequestBody update: UpdateTimeRecordDTO,
     ): ResponseEntity<TimeRecordDTO> {
-        val edited = service.edit(id, timeRecord.timeInEpoch, timeRecord.timeOutEpoch)
-            ?: return ResponseEntity.notFound().build()
+        val edited = service.update(id, update) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(edited))
     }
 

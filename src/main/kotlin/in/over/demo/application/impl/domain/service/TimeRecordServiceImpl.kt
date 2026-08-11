@@ -1,22 +1,26 @@
-package `in`.over.demo.domain.impl.domain.service
+package `in`.over.demo.application.impl.domain.service
 
+import `in`.over.demo.application.dto.UpdateTimeRecordDTO
+import `in`.over.demo.application.mapper.TimeRecordMapper
 import `in`.over.demo.domain.model.TimeRecord
 import `in`.over.demo.domain.repository.TimeRecordRepository
-import `in`.over.demo.domain.service.ITimeRecordService
+import `in`.over.demo.domain.service.TimeRecordService
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import kotlin.time.Clock
 
 @Service
-class TimeRecordService(private val repository: TimeRecordRepository) : ITimeRecordService {
+class TimeRecordServiceImpl(
+    private val repository: TimeRecordRepository,
+    private val mapper: TimeRecordMapper
+) : TimeRecordService {
     override fun getRecords(): List<TimeRecord> = repository.findAll(Sort.by("id"))
 
     override fun insert(record: TimeRecord): TimeRecord = repository.save(record)
 
-    override fun edit(id: Long, timeInEpoch: Long?, timeOutEpoch: Long?): TimeRecord? {
+    override fun update(id: Long, update: UpdateTimeRecordDTO): TimeRecord? {
         val record = repository.findById(id).orElse(null) ?: return null
-        timeInEpoch?.let { record.timeInEpoch = it }
-        timeOutEpoch?.let { record.timeOutEpoch = it }
+        mapper.updateTime(update, record)
         return repository.save(record)
     }
 
