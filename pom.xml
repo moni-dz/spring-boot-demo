@@ -68,6 +68,11 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<!-- Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
@@ -95,7 +100,8 @@
 					</args>
 					<compilerPlugins>
 						<plugin>spring</plugin>
-					</compilerPlugins>
+                        <plugin>jpa</plugin>
+                    </compilerPlugins>
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -103,7 +109,12 @@
 						<artifactId>kotlin-maven-allopen</artifactId>
 						<version>${kotlin.version}</version>
 					</dependency>
-				</dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-noarg</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                </dependencies>
 				<executions>
 					<execution>
 						<id>kapt</id>
@@ -125,7 +136,8 @@
 						<goals>
 							<goal>compile</goal>
 						</goals>
-					</execution>
+                        <configuration/>
+                    </execution>
 					<execution>
 						<id>test-compile</id>
 						<goals>

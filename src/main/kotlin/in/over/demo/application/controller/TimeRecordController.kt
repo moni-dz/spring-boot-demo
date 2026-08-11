@@ -1,8 +1,7 @@
 package `in`.over.demo.application.controller
 
-import `in`.over.demo.application.dto.TimeRecordDTO
+import `in`.over.demo.domain.model.TimeRecordDTO
 import `in`.over.demo.application.mapper.TimeRecordMapper
-import `in`.over.demo.domain.model.TimeRecord
 import `in`.over.demo.domain.service.ITimeRecordService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -34,13 +33,7 @@ class TimeRecordController(
 
     @DeleteMapping
     fun deleteRecord(@RequestParam id: Long): ResponseEntity<TimeRecordDTO> {
-        val deleted = service.delete(TimeRecord(
-            id = TODO(),
-            name = TODO(),
-            timeInEpoch = TODO(),
-            timeOutEpoch = TODO()
-        ))
-
+        val deleted = service.delete(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(deleted))
     }
 
@@ -49,26 +42,21 @@ class TimeRecordController(
         @RequestParam id: Long,
         @RequestBody timeRecord: PartialTimeRecord,
     ): ResponseEntity<TimeRecordDTO> {
-        val edited = service.edit(TimeRecord(
-            id = TODO(),
-            name = TODO(),
-            timeInEpoch = TODO(),
-            timeOutEpoch = TODO()
-        ))
-
+        val edited = service.edit(id, timeRecord.timeInEpoch, timeRecord.timeOutEpoch)
+            ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(edited))
     }
 
 
     @PostMapping("/time-in")
     fun timeIn(@RequestBody name: String): ResponseEntity<TimeRecordDTO> {
-        val timedIn = service.timeIn(1)
+        val timedIn = service.timeIn(name)
         return ResponseEntity.ok(mapper.toDto(timedIn))
     }
 
     @PostMapping("/time-out")
     fun timeOut(@RequestBody name: String): ResponseEntity<TimeRecordDTO> {
-        val timedOut = service.timeOut(1)
+        val timedOut = service.timeOut(name) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(timedOut))
     }
 }

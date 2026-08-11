@@ -1,33 +1,37 @@
 package `in`.over.demo.domain.impl.domain.service
 
 import `in`.over.demo.domain.model.TimeRecord
+import `in`.over.demo.domain.repository.TimeRecordRepository
 import `in`.over.demo.domain.service.ITimeRecordService
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import kotlin.time.Clock
 
 @Service
-class TimeRecordService: ITimeRecordService {
-    override fun getRecords(): List<TimeRecord> {
-        TODO("Not yet implemented")
+class TimeRecordService(private val repository: TimeRecordRepository) : ITimeRecordService {
+    override fun getRecords(): List<TimeRecord> = repository.findAll(Sort.by("id"))
+
+    override fun insert(record: TimeRecord): TimeRecord = repository.save(record)
+
+    override fun edit(id: Long, timeInEpoch: Long?, timeOutEpoch: Long?): TimeRecord? {
+        val record = repository.findById(id).orElse(null) ?: return null
+        timeInEpoch?.let { record.timeInEpoch = it }
+        timeOutEpoch?.let { record.timeOutEpoch = it }
+        return repository.save(record)
     }
 
-    override fun insert(record: TimeRecord): TimeRecord {
-        TODO("Not yet implemented")
+    override fun delete(id: Long): TimeRecord? {
+        val record = repository.findById(id).orElse(null) ?: return null
+        repository.delete(record)
+        return record
     }
 
-    override fun edit(record: TimeRecord): TimeRecord {
-        TODO("Not yet implemented")
-    }
+    override fun timeIn(name: String): TimeRecord =
+        repository.save(TimeRecord(name = name, timeInEpoch = Clock.System.now().epochSeconds))
 
-    override fun delete(record: TimeRecord): TimeRecord {
-        TODO("Not yet implemented")
+    override fun timeOut(name: String): TimeRecord? {
+        val record = repository.findFirstByNameAndTimeOutEpochIsNullOrderByIdDesc(name) ?: return null
+        record.timeOutEpoch = Clock.System.now().epochSeconds
+        return repository.save(record)
     }
-
-    override fun timeIn(timeInEpoch: Long): TimeRecord {
-        TODO("Not yet implemented")
-    }
-
-    override fun timeOut(timeOutEpoch: Long): TimeRecord {
-        TODO("Not yet implemented")
-    }
-
 }

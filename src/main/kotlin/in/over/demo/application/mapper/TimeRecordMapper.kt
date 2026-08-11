@@ -1,6 +1,6 @@
 package `in`.over.demo.application.mapper
 
-import `in`.over.demo.application.dto.TimeRecordDTO
+import `in`.over.demo.domain.model.TimeRecordDTO
 import `in`.over.demo.domain.model.TimeRecord
 import org.mapstruct.Mapper
 

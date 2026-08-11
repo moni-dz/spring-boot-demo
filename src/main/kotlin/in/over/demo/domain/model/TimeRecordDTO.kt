@@ -1,4 +1,4 @@
-package `in`.over.demo.application.dto
+package `in`.over.demo.domain.model
 
 data class TimeRecordDTO(
     val id: Long,
