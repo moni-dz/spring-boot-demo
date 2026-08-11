@@ -1,6 +1,5 @@
-package `in`.over.demo
+package `in`.over.demo.domain.model
 
-import kotlin.time.Instant
 
 /**
  * @property name the name of the user in the entry

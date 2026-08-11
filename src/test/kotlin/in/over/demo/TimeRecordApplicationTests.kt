@@ -1,5 +1,7 @@
 package `in`.over.demo
 
+import `in`.over.demo.domain.model.TimeRecord
+import `in`.over.demo.domain.service.TimeRecordService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

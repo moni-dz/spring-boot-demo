@@ -1,5 +1,6 @@
-package `in`.over.demo
+package `in`.over.demo.domain.service
 
+import `in`.over.demo.domain.model.TimeRecord
 import org.springframework.stereotype.Service
 
 @Service

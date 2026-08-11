@@ -1,5 +1,7 @@
-package `in`.over.demo
+package `in`.over.demo.application.controller
 
+import `in`.over.demo.domain.model.TimeRecord
+import `in`.over.demo.domain.service.TimeRecordService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -11,14 +13,19 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import kotlin.time.Clock
 
+/**
+ * @property timeInEpoch time-in in Unix epoch seconds
+ * @property timeOutEpoch time-out in Unix epoch seconds
+ */
+data class PartialTimeRecord(var timeInEpoch: Long?, var timeOutEpoch: Long?)
+
 @RestController
 @RequestMapping("/records")
-class ReqController(private val service: TimeRecordService) {
+class TimeRecordController(private val service: TimeRecordService) {
     @RequestMapping("/status")
     fun health() = "Hello!"
 
     @GetMapping
-
     fun listRecords() = service.records
 
     @DeleteMapping
