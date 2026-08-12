@@ -4,6 +4,11 @@ import `in`.over.demo.application.dto.TimeRecordDTO
 import `in`.over.demo.application.dto.UpdateTimeRecordDTO
 import `in`.over.demo.application.mapper.TimeRecordMapper
 import `in`.over.demo.domain.service.TimeRecordService
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,14 +21,25 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/records")
+@Tag(name = "Time Records")
 class TimeRecordController(
     private val service: TimeRecordService,
     private val mapper: TimeRecordMapper,
 ) {
-    @RequestMapping("/status")
+    @GetMapping("/status")
     fun health() = "Hello!"
 
     @GetMapping
+    @ApiResponse(
+        responseCode = "200",
+        description = "Time records",
+        content = [
+            Content(
+                mediaType = "application/json",
+                array = ArraySchema(schema = Schema(implementation = TimeRecordDTO::class)),
+            ),
+        ],
+    )
     fun listRecords(): List<TimeRecordDTO> = mapper.toDtos(service.getRecords())
 
     @DeleteMapping

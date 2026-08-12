@@ -50,6 +50,22 @@ class TimeRecordApplicationTests {
     }
 
     @Test
+    fun `OpenAPI documentation and Swagger UI are available`() {
+        mockMvc.perform(get("/v3/api-docs"))
+            .andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.info.title").value("Time Record API"))
+            .andExpect(jsonPath("$.paths['/records']").exists())
+            .andExpect(
+                jsonPath("$.paths['/records'].get.responses['200'].content['application/json'].schema.items['\$ref']")
+                    .value("#/components/schemas/TimeRecordDTO"),
+            )
+
+        mockMvc.perform(get("/swagger-ui.html"))
+            .andExpect(status().is3xxRedirection)
+    }
+
+    @Test
     fun `listRecords returns all stored records`() {
         val first = service.insert(TimeRecord(name = "Lythe", timeInEpoch = 100))
         val second = service.insert(TimeRecord(name = "Marvin", timeInEpoch = 200, timeOutEpoch = 250))
