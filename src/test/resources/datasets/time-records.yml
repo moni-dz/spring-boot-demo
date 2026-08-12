@@ -1,0 +1,17 @@
+time_records:
+  - id: 1
+    name: Lythe
+    time_in_epoch: 100
+    time_out_epoch: "[null]"
+  - id: 2
+    name: Lythe
+    time_in_epoch: 200
+    time_out_epoch: "[null]"
+  - id: 3
+    name: Lythe
+    time_in_epoch: 300
+    time_out_epoch: 350
+  - id: 4
+    name: Marvin
+    time_in_epoch: 400
+    time_out_epoch: 450
