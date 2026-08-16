@@ -1,6 +1,7 @@
 package `in`.over.demo.application.controller
 
 import `in`.over.demo.application.dto.TimeRecordDTO
+import `in`.over.demo.application.dto.TimeRecordEntryDTO
 import `in`.over.demo.application.dto.UpdateTimeRecordDTO
 import `in`.over.demo.application.mapper.TimeRecordMapper
 import `in`.over.demo.domain.service.TimeRecordService
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -59,14 +61,14 @@ class TimeRecordController(
 
 
     @PostMapping("/time-in")
-    fun timeIn(@RequestBody name: String): ResponseEntity<TimeRecordDTO> {
-        val timedIn = service.timeIn(name)
+    fun timeIn(@Valid @RequestBody request: TimeRecordEntryDTO): ResponseEntity<TimeRecordDTO> {
+        val timedIn = service.timeIn(request.employeeId) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(timedIn))
     }
 
     @PostMapping("/time-out")
-    fun timeOut(@RequestBody name: String): ResponseEntity<TimeRecordDTO> {
-        val timedOut = service.timeOut(name) ?: return ResponseEntity.notFound().build()
+    fun timeOut(@Valid @RequestBody request: TimeRecordEntryDTO): ResponseEntity<TimeRecordDTO> {
+        val timedOut = service.timeOut(request.employeeId) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(timedOut))
     }
 }

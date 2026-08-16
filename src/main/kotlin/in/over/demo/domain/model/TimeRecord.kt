@@ -9,7 +9,7 @@ import jakarta.persistence.Table
 
 /**
  * @property id sequential id
- * @property name the name of the user in the entry
+ * @property employeeId employee owning the entry
  * @property timeInEpoch time-in in Unix epoch seconds
  * @property timeOutEpoch time-out in Unix epoch seconds
  */
@@ -20,8 +20,8 @@ data class TimeRecord(
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     @field:Column(columnDefinition = "int")
     var id: Long = 0,
-    @field:Column(length = 1000)
-    val name: String = "",
+    @field:Column(name = "employee_id", nullable = false)
+    val employeeId: Long = 0,
     @field:Column(name = "time_in_epoch", columnDefinition = "int unsigned")
     var timeInEpoch: Long? = null,
     @field:Column(name = "time_out_epoch", columnDefinition = "int unsigned")

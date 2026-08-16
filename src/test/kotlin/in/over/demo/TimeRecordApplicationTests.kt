@@ -1,6 +1,8 @@
 package `in`.over.demo
 
+import `in`.over.demo.domain.model.Employee
 import `in`.over.demo.domain.model.TimeRecord
+import `in`.over.demo.domain.repository.EmployeeRepository
 import `in`.over.demo.domain.repository.TimeRecordRepository
 import `in`.over.demo.domain.service.TimeRecordService
 import org.junit.jupiter.api.BeforeEach
@@ -36,11 +38,22 @@ class TimeRecordApplicationTests {
     @Autowired
     private lateinit var repository: TimeRecordRepository
 
+    @Autowired
+    private lateinit var employeeRepository: EmployeeRepository
+
+    private lateinit var lythe: Employee
+    private lateinit var marvin: Employee
+    private lateinit var lim: Employee
+
     private lateinit var mockMvc: MockMvc
 
     @BeforeEach
     fun setUp() {
         repository.deleteAll()
+        employeeRepository.deleteAll()
+        lythe = employeeRepository.save(Employee(lastName = "Lythe", firstName = "Test"))
+        marvin = employeeRepository.save(Employee(lastName = "Marvin", firstName = "Test"))
+        lim = employeeRepository.save(Employee(lastName = "Lim", firstName = "Test"))
         mockMvc = MockMvcBuilders.webAppContextSetup(appContext).build()
     }
 
@@ -69,18 +82,18 @@ class TimeRecordApplicationTests {
 
     @Test
     fun `listRecords returns all stored records`() {
-        val first = service.insert(TimeRecord(name = "Lythe", timeInEpoch = 100))
-        val second = service.insert(TimeRecord(name = "Marvin", timeInEpoch = 200, timeOutEpoch = 250))
+        val first = service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 100))
+        val second = service.insert(TimeRecord(employeeId = marvin.id, timeInEpoch = 200, timeOutEpoch = 250))
 
         mockMvc.perform(get("/records"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].id").value(first.id))
-            .andExpect(jsonPath("$[0].name").value("Lythe"))
+            .andExpect(jsonPath("$[0].employeeId").value(lythe.id))
             .andExpect(jsonPath("$[0].timeInEpoch").value(100))
             .andExpect(jsonPath("$[0].timeOutEpoch").isEmpty)
             .andExpect(jsonPath("$[1].id").value(second.id))
-            .andExpect(jsonPath("$[1].name").value("Marvin"))
+            .andExpect(jsonPath("$[1].employeeId").value(marvin.id))
             .andExpect(jsonPath("$[1].timeOutEpoch").value(250))
     }
 
@@ -90,12 +103,12 @@ class TimeRecordApplicationTests {
 
         mockMvc.perform(
             post("/records/time-in")
-                .contentType(MediaType.TEXT_PLAIN)
-                .content("Lythe"),
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"employeeId":${lythe.id}}"""),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").isNumber)
-            .andExpect(jsonPath("$.name").value("Lythe"))
+            .andExpect(jsonPath("$.employeeId").value(lythe.id))
             .andExpect(jsonPath("$.timeInEpoch").isNumber)
             .andExpect(jsonPath("$.timeOutEpoch").isEmpty)
 
@@ -107,31 +120,31 @@ class TimeRecordApplicationTests {
 
     @Test
     fun `timeIn assigns an id after the current maximum`() {
-        service.insert(TimeRecord(name = "Lythe", timeInEpoch = 100, timeOutEpoch = 150))
-        val currentMaximum = service.insert(TimeRecord(name = "Marvin", timeInEpoch = 200)).id
+        service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 100, timeOutEpoch = 150))
+        val currentMaximum = service.insert(TimeRecord(employeeId = marvin.id, timeInEpoch = 200)).id
 
         mockMvc.perform(
             post("/records/time-in")
-                .contentType(MediaType.TEXT_PLAIN)
-                .content("Lim"),
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"employeeId":${lim.id}}"""),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(currentMaximum + 1))
-            .andExpect(jsonPath("$.name").value("Lim"))
+            .andExpect(jsonPath("$.employeeId").value(lim.id))
     }
 
     @Test
-    fun `timeOut closes the most recent open record for the name`() {
-        service.insert(TimeRecord(name = "Lythe", timeInEpoch = 100))
-        val latestOpen = service.insert(TimeRecord(name = "Lythe", timeInEpoch = 200))
-        service.insert(TimeRecord(name = "Lythe", timeInEpoch = 300, timeOutEpoch = 350))
+    fun `timeOut closes the most recent open record for the employee`() {
+        service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 100))
+        val latestOpen = service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 200))
+        service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 300, timeOutEpoch = 350))
 
         val beforeRequest = Clock.System.now().epochSeconds
 
         mockMvc.perform(
             post("/records/time-out")
-                .contentType(MediaType.TEXT_PLAIN)
-                .content("Lythe"),
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"employeeId":${lythe.id}}"""),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(latestOpen.id))
@@ -147,12 +160,12 @@ class TimeRecordApplicationTests {
 
     @Test
     fun `timeOut returns not found when no open record matches`() {
-        service.insert(TimeRecord(name = "Lythe", timeInEpoch = 100, timeOutEpoch = 150))
+        service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 100, timeOutEpoch = 150))
 
         mockMvc.perform(
             post("/records/time-out")
-                .contentType(MediaType.TEXT_PLAIN)
-                .content("Lythe"),
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"employeeId":${lythe.id}}"""),
         )
             .andExpect(status().isNotFound)
             .andExpect(content().string(""))
@@ -160,7 +173,7 @@ class TimeRecordApplicationTests {
 
     @Test
     fun `editRecord updates only non-null fields`() {
-        val record = service.insert(TimeRecord(name = "Lythe", timeInEpoch = 100))
+        val record = service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 100))
 
         mockMvc.perform(
             put("/records")
@@ -170,11 +183,11 @@ class TimeRecordApplicationTests {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(record.id))
-            .andExpect(jsonPath("$.name").value("Lythe"))
+            .andExpect(jsonPath("$.employeeId").value(lythe.id))
             .andExpect(jsonPath("$.timeInEpoch").value(100))
             .andExpect(jsonPath("$.timeOutEpoch").value(250))
 
-        assertEquals(TimeRecord(record.id, "Lythe", 100, 250), service.getRecords().single())
+        assertEquals(TimeRecord(record.id, lythe.id, 100, 250), service.getRecords().single())
     }
 
     @Test
@@ -190,13 +203,13 @@ class TimeRecordApplicationTests {
 
     @Test
     fun `deleteRecord returns and removes the matching record`() {
-        val deleted = service.insert(TimeRecord(name = "Lythe", timeInEpoch = 100))
-        val remaining = service.insert(TimeRecord(name = "Marvin", timeInEpoch = 200, timeOutEpoch = 250))
+        val deleted = service.insert(TimeRecord(employeeId = lythe.id, timeInEpoch = 100))
+        val remaining = service.insert(TimeRecord(employeeId = marvin.id, timeInEpoch = 200, timeOutEpoch = 250))
 
         mockMvc.perform(delete("/records").param("id", deleted.id.toString()))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(deleted.id))
-            .andExpect(jsonPath("$.name").value("Lythe"))
+            .andExpect(jsonPath("$.employeeId").value(lythe.id))
 
         assertEquals(listOf(remaining), service.getRecords())
     }

@@ -8,6 +8,6 @@ interface TimeRecordService {
     fun insert(record: TimeRecord): TimeRecord
     fun update(id: Long, update: UpdateTimeRecordDTO): TimeRecord?
     fun delete(id: Long): TimeRecord?
-    fun timeIn(name: String): TimeRecord
-    fun timeOut(name: String): TimeRecord?
+    fun timeIn(employeeId: Long): TimeRecord?
+    fun timeOut(employeeId: Long): TimeRecord?
 }

@@ -3,6 +3,7 @@ package `in`.over.demo.application.impl.domain.service
 import `in`.over.demo.application.dto.UpdateTimeRecordDTO
 import `in`.over.demo.application.mapper.TimeRecordMapper
 import `in`.over.demo.domain.model.TimeRecord
+import `in`.over.demo.domain.repository.EmployeeRepository
 import `in`.over.demo.domain.repository.TimeRecordRepository
 import `in`.over.demo.domain.service.TimeRecordService
 import org.springframework.data.domain.Sort
@@ -12,7 +13,8 @@ import kotlin.time.Clock
 @Service
 class TimeRecordServiceImpl(
     private val repository: TimeRecordRepository,
-    private val mapper: TimeRecordMapper
+    private val employeeRepository: EmployeeRepository,
+    private val mapper: TimeRecordMapper,
 ) : TimeRecordService {
     override fun getRecords(): List<TimeRecord> = repository.findAll(Sort.by("id"))
 
@@ -30,11 +32,13 @@ class TimeRecordServiceImpl(
         return record
     }
 
-    override fun timeIn(name: String): TimeRecord =
-        repository.save(TimeRecord(name = name, timeInEpoch = Clock.System.now().epochSeconds))
+    override fun timeIn(employeeId: Long): TimeRecord? {
+        if (!employeeRepository.existsById(employeeId)) return null
+        return repository.save(TimeRecord(employeeId = employeeId, timeInEpoch = Clock.System.now().epochSeconds))
+    }
 
-    override fun timeOut(name: String): TimeRecord? {
-        val record = repository.findFirstByNameAndTimeOutEpochIsNullOrderByIdDesc(name) ?: return null
+    override fun timeOut(employeeId: Long): TimeRecord? {
+        val record = repository.findFirstByEmployeeIdAndTimeOutEpochIsNullOrderByIdDesc(employeeId) ?: return null
         record.timeOutEpoch = Clock.System.now().epochSeconds
         return repository.save(record)
     }
