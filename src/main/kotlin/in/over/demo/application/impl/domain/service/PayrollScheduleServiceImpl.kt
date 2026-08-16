@@ -3,26 +3,30 @@ package `in`.over.demo.application.impl.domain.service
 import `in`.over.demo.application.dto.PayrollCreationScheduleRequestDTO
 import `in`.over.demo.application.dto.PayrollScheduleDTO
 import `in`.over.demo.application.dto.PayrollWageUpdateScheduleRequestDTO
-import `in`.over.demo.application.dto.StalePayrollDeletionScheduleRequestDTO
 import `in`.over.demo.application.job.CreatePayrollJob
 import `in`.over.demo.application.job.SoftDeleteStalePayrollJob
 import `in`.over.demo.application.job.UpdatePayrollWageJob
 import `in`.over.demo.domain.repository.EmployeeRepository
 import `in`.over.demo.domain.service.PayrollScheduleService
+import jakarta.annotation.PostConstruct
+import org.quartz.CronScheduleBuilder.cronSchedule
 import org.quartz.JobBuilder.newJob
 import org.quartz.JobDataMap
 import org.quartz.JobDetail
 import org.quartz.Scheduler
 import org.quartz.TriggerBuilder.newTrigger
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 
 @Service
 class PayrollScheduleServiceImpl(
     private val scheduler: Scheduler,
     private val employeeRepository: EmployeeRepository,
+    @Value($$"${payroll.stale-deletion.cron}") private val staleDeletionCron: String,
 ) : PayrollScheduleService {
     override fun scheduleCreation(
         employeeId: Long,
@@ -51,7 +55,7 @@ class PayrollScheduleServiceImpl(
         employeeId: Long,
         payrollId: Long,
         request: PayrollWageUpdateScheduleRequestDTO,
-    ): PayrollScheduleDTO? {
+    ): PayrollScheduleDTO {
         val job = newJob(UpdatePayrollWageJob::class.java)
             .withIdentity("wage-$employeeId-$payrollId", GROUP)
             .usingJobData(UpdatePayrollWageJob.EMPLOYEE_ID, employeeId.toString())
@@ -62,26 +66,33 @@ class PayrollScheduleServiceImpl(
         return schedule(job, request.executeAt, emptyMap())
     }
 
-    override fun scheduleStaleDeletion(
-        employeeId: Long,
-        request: StalePayrollDeletionScheduleRequestDTO,
-    ): PayrollScheduleDTO? {
-        if (!employeeRepository.existsById(employeeId)) return null
-
+    @PostConstruct
+    fun scheduleStaleDeletion() {
         val job = newJob(SoftDeleteStalePayrollJob::class.java)
-            .withIdentity("delete-stale-$employeeId", GROUP)
-            .usingJobData(SoftDeleteStalePayrollJob.EMPLOYEE_ID, employeeId.toString())
+            .withIdentity(STALE_JOB, GROUP)
             .storeDurably()
             .build()
 
-        return schedule(
-            job,
-            request.executeAt,
-            mapOf(SoftDeleteStalePayrollJob.STALE_BEFORE to request.staleBefore.toString()),
-        )
+        scheduler.addJob(job, true)
+
+        val trigger = newTrigger()
+            .withIdentity(STALE_TRIGGER, GROUP)
+            .forJob(job.key)
+            .withSchedule(cronSchedule(staleDeletionCron).inTimeZone(PAYROLL_TIME_ZONE))
+            .build()
+
+        if (scheduler.checkExists(trigger.key)) {
+            scheduler.rescheduleJob(trigger.key, trigger)
+        } else {
+            scheduler.scheduleJob(trigger)
+        }
     }
 
-    private fun schedule(job: JobDetail, executeAt: Instant, data: Map<String, String>): PayrollScheduleDTO {
+    private fun schedule(
+        job: JobDetail,
+        executeAt: Instant,
+        data: Map<String, String>,
+    ): PayrollScheduleDTO {
         scheduler.addJob(job, true)
 
         val scheduleId = "${job.key.name}-${UUID.randomUUID()}"
@@ -99,5 +110,8 @@ class PayrollScheduleServiceImpl(
 
     private companion object {
         const val GROUP = "employee-payroll"
+        const val STALE_JOB = "delete-stale"
+        const val STALE_TRIGGER = "delete-stale-schedule"
+        val PAYROLL_TIME_ZONE: TimeZone = TimeZone.getTimeZone("Asia/Manila")
     }
 }

@@ -4,7 +4,6 @@ import `in`.over.demo.BaseServiceTest
 import `in`.over.demo.application.dto.PayrollCreationScheduleRequestDTO
 import `in`.over.demo.application.dto.PayrollScheduleDTO
 import `in`.over.demo.application.dto.PayrollWageUpdateScheduleRequestDTO
-import `in`.over.demo.application.dto.StalePayrollDeletionScheduleRequestDTO
 import `in`.over.demo.application.job.CreatePayrollJob
 import `in`.over.demo.application.job.SoftDeleteStalePayrollJob
 import `in`.over.demo.application.job.UpdatePayrollWageJob
@@ -14,10 +13,12 @@ import `in`.over.demo.domain.service.PayrollService
 import `in`.over.demo.domain.service.TimeRecordService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.quartz.CronTrigger
 import org.quartz.JobExecutionContext
 import org.quartz.JobExecutionException
 import org.quartz.JobKey
 import org.quartz.Scheduler
+import org.quartz.SimpleTrigger
 import org.quartz.TriggerKey
 import org.quartz.impl.matchers.KeyMatcher
 import org.quartz.listeners.JobListenerSupport
@@ -42,6 +43,9 @@ class PayrollScheduleServiceTests : BaseServiceTest {
     private lateinit var service: PayrollScheduleService
 
     @Autowired
+    private lateinit var scheduleService: PayrollScheduleServiceImpl
+
+    @Autowired
     private lateinit var scheduler: Scheduler
 
     @Autowired
@@ -57,7 +61,7 @@ class PayrollScheduleServiceTests : BaseServiceTest {
     }
 
     @Test
-    fun `creation schedule stores scalar job data and trigger`() {
+    fun `creation schedule stores scalar job data and timestamp trigger`() {
         val executeAt = Instant.now().plusSeconds(3600)
         val schedule = service.scheduleCreation(
             1,
@@ -72,7 +76,7 @@ class PayrollScheduleServiceTests : BaseServiceTest {
         assertNotNull(schedule)
         val key = JobKey.jobKey(schedule.jobId, GROUP)
         val job = scheduler.getJobDetail(key)
-        val trigger = scheduler.getTrigger(TriggerKey.triggerKey(schedule.scheduleId, GROUP))
+        val trigger = scheduler.getTrigger(TriggerKey.triggerKey(schedule.scheduleId, GROUP)) as SimpleTrigger
 
         assertEquals(CreatePayrollJob::class.java, job.jobClass)
         assertEquals("1", job.jobDataMap.getString(CreatePayrollJob.EMPLOYEE_ID))
@@ -106,20 +110,15 @@ class PayrollScheduleServiceTests : BaseServiceTest {
     }
 
     @Test
-    fun `stale deletion schedule stores employee cutoff`() {
-        val staleBefore = Instant.parse("2025-06-01T00:00:00Z")
-        val schedule = service.scheduleStaleDeletion(
-            1,
-            StalePayrollDeletionScheduleRequestDTO(Instant.now().plusSeconds(3600), staleBefore),
-        )
+    fun `stale deletion is scheduled automatically with development cron`() {
+        scheduleService.scheduleStaleDeletion()
 
-        assertNotNull(schedule)
-
-        val job = scheduler.getJobDetail(JobKey.jobKey(schedule.jobId, GROUP))
-        val trigger = scheduler.getTrigger(TriggerKey.triggerKey(schedule.scheduleId, GROUP))
+        val job = scheduler.getJobDetail(JobKey.jobKey(STALE_JOB, GROUP))
+        val trigger = scheduler.getTrigger(TriggerKey.triggerKey(STALE_TRIGGER, GROUP)) as CronTrigger
 
         assertEquals(SoftDeleteStalePayrollJob::class.java, job.jobClass)
-        assertEquals(staleBefore.toString(), trigger.jobDataMap.getString(SoftDeleteStalePayrollJob.STALE_BEFORE))
+        assertEquals("0 * * * * ?", trigger.cronExpression)
+        assertEquals("Asia/Manila", trigger.timeZone.id)
     }
 
     @Test
@@ -159,6 +158,8 @@ class PayrollScheduleServiceTests : BaseServiceTest {
         )
 
         assertNotNull(wageSchedule)
+        val wageTrigger = scheduler.getTrigger(TriggerKey.triggerKey(wageSchedule.scheduleId, GROUP)) as SimpleTrigger
+        assertEquals(executeAt.toEpochMilli(), wageTrigger.nextFireTime.time)
         execute(wageSchedule)
 
         val updated = payrollService.get(1, created.id)!!
@@ -166,18 +167,16 @@ class PayrollScheduleServiceTests : BaseServiceTest {
         assertEquals(14400, updated.workedSeconds)
         assertEquals(0, updated.wageEarned.compareTo(BigDecimal("200.0000")))
 
-        val deletionSchedule = service.scheduleStaleDeletion(
-            1,
-            StalePayrollDeletionScheduleRequestDTO(executeAt, Instant.parse("2026-04-01T00:00:00Z")),
-        )
-
-        assertNotNull(deletionSchedule)
-        execute(deletionSchedule)
+        scheduleService.scheduleStaleDeletion()
+        execute(TriggerKey.triggerKey(STALE_TRIGGER, GROUP))
         assertTrue(payrollService.list(1).isEmpty())
     }
 
-    private fun execute(schedule: PayrollScheduleDTO) {
-        val trigger = scheduler.getTrigger(TriggerKey.triggerKey(schedule.scheduleId, GROUP))
+    private fun execute(schedule: PayrollScheduleDTO) =
+        execute(TriggerKey.triggerKey(schedule.scheduleId, GROUP))
+
+    private fun execute(triggerKey: TriggerKey) {
+        val trigger = scheduler.getTrigger(triggerKey)
         val completed = CountDownLatch(1)
         val failure = AtomicReference<JobExecutionException?>(null)
 
@@ -201,5 +200,7 @@ class PayrollScheduleServiceTests : BaseServiceTest {
 
     private companion object {
         const val GROUP = "employee-payroll"
+        const val STALE_JOB = "delete-stale"
+        const val STALE_TRIGGER = "delete-stale-schedule"
     }
 }

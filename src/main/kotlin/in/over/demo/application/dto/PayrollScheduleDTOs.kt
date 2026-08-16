@@ -14,11 +14,6 @@ data class PayrollWageUpdateScheduleRequestDTO(
     val executeAt: Instant,
 )
 
-data class StalePayrollDeletionScheduleRequestDTO(
-    val executeAt: Instant,
-    val staleBefore: Instant,
-)
-
 data class PayrollScheduleDTO(
     val jobId: String,
     val scheduleId: String,

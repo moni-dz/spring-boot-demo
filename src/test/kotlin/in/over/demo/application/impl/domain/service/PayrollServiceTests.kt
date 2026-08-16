@@ -68,8 +68,8 @@ class PayrollServiceTests : BaseServiceTest {
     }
 
     @Test
-    fun `legacy wage snapshots cannot be recalculated`() {
-        val legacy = repository.saveAndFlush(
+    fun `old wage snapshots cannot be recalculated`() {
+        val old = repository.saveAndFlush(
             PayrollRecord(
                 employeeId = 1,
                 intervalStart = Instant.parse("2027-01-01T00:00:00Z"),
@@ -80,8 +80,8 @@ class PayrollServiceTests : BaseServiceTest {
             ),
         )
 
-        assertFailsWith<IllegalArgumentException> { service.updateWage(1, legacy.id) }
-        assertEquals(0, repository.findById(legacy.id).orElseThrow().wageEarned.compareTo(BigDecimal("123.4500")))
+        assertFailsWith<IllegalArgumentException> { service.updateWage(1, old.id) }
+        assertEquals(0, repository.findById(old.id).orElseThrow().wageEarned.compareTo(BigDecimal("123.4500")))
     }
 
     @Test

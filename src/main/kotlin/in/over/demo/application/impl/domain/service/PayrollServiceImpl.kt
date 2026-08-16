@@ -40,18 +40,23 @@ class PayrollServiceImpl(
 
     @Transactional
     override fun updateWage(employeeId: Long, payrollId: Long): PayrollRecord? {
-        val record = repository.findActiveByIdForUpdate(payrollId, employeeId) ?: return null
+        val record = repository.findForUpdateByIdAndEmployeeIdAndDeletedAtIsNull(payrollId, employeeId) ?: return null
         return recalculate(record)
     }
 
     @Transactional
-    override fun softDeleteStale(employeeId: Long, staleBefore: Instant): Int? =
-        repository.softDeleteStale(employeeId, staleBefore, Instant.now())
+    override fun softDeleteStale(employeeId: Long, staleBefore: Instant): Int? {
+        val deletedAt = Instant.now()
+        val records = repository.findAllByEmployeeIdAndDeletedAtIsNullAndIntervalEndBefore(employeeId, staleBefore)
+        records.forEach { it.deletedAt = deletedAt }
+        return records.size
+    }
 
     private fun recalculate(record: PayrollRecord): PayrollRecord {
         require(record.calculationVersion == PayrollRecord.TIME_DERIVED_CALCULATION) {
-            "legacy payroll records cannot be recalculated"
+            "old payroll records cannot be recalculated"
         }
+
         record.workedSeconds = workedSeconds(record)
 
         record.wageEarned = record.hourlyRate
@@ -62,11 +67,12 @@ class PayrollServiceImpl(
     }
 
     private fun workedSeconds(payroll: PayrollRecord): Long {
-        val records = timeRecordRepository.findCompletedOverlapping(
-            payroll.employeeId,
-            payroll.intervalStart,
-            payroll.intervalEnd,
-        )
+        val records = timeRecordRepository
+            .findAllByEmployeeIdAndTimeOutIsNotNullAndTimeInLessThanAndTimeOutGreaterThanOrderByTimeIn(
+                payroll.employeeId,
+                payroll.intervalEnd,
+                payroll.intervalStart,
+            )
 
         var total = 0L
         var mergedStart: Instant? = null

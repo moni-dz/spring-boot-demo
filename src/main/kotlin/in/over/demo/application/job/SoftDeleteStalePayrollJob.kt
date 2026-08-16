@@ -1,29 +1,25 @@
 package `in`.over.demo.application.job
 
+import `in`.over.demo.domain.repository.EmployeeRepository
 import `in`.over.demo.domain.service.PayrollService
 import org.quartz.DisallowConcurrentExecution
-import org.quartz.JobExecutionException
 import org.quartz.JobExecutionContext
 import org.springframework.scheduling.quartz.QuartzJobBean
-import java.time.Instant
+import java.time.YearMonth
+import java.time.ZoneId
 
 @DisallowConcurrentExecution
 class SoftDeleteStalePayrollJob(
     private val payrollService: PayrollService,
+    private val employeeRepository: EmployeeRepository,
 ) : QuartzJobBean() {
     override fun executeInternal(context: JobExecutionContext) {
-        val data = context.mergedJobDataMap
+        val staleBefore = YearMonth.now(TIME_ZONE).atDay(1).atStartOfDay(TIME_ZONE).toInstant()
 
-        val deleted = payrollService.softDeleteStale(
-            data.getString(EMPLOYEE_ID).toLong(),
-            Instant.parse(data.getString(STALE_BEFORE)),
-        )
-
-        if (deleted == null) throw JobExecutionException("Employee no longer exists")
+        employeeRepository.findAll().forEach { payrollService.softDeleteStale(it.id, staleBefore) }
     }
 
-    companion object {
-        const val EMPLOYEE_ID = "employeeId"
-        const val STALE_BEFORE = "staleBefore"
+    private companion object {
+        val TIME_ZONE: ZoneId = ZoneId.of("Asia/Manila")
     }
 }

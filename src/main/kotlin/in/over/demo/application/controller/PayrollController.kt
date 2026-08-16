@@ -4,7 +4,6 @@ import `in`.over.demo.application.dto.PayrollCreationScheduleRequestDTO
 import `in`.over.demo.application.dto.PayrollRecordDTO
 import `in`.over.demo.application.dto.PayrollScheduleDTO
 import `in`.over.demo.application.dto.PayrollWageUpdateScheduleRequestDTO
-import `in`.over.demo.application.dto.StalePayrollDeletionScheduleRequestDTO
 import `in`.over.demo.application.mapper.PayrollRecordMapper
 import `in`.over.demo.domain.service.PayrollScheduleService
 import `in`.over.demo.domain.service.PayrollService
@@ -31,7 +30,7 @@ class PayrollController(
     fun list(@PathVariable employeeId: Long): List<PayrollRecordDTO> =
         mapper.toDtos(payrollService.list(employeeId))
 
-    @PostMapping("/{employeeId}/payrolls/creation-schedules")
+    @PostMapping("/{employeeId}/payrolls/schedule-create")
     fun scheduleCreation(
         @PathVariable employeeId: Long,
         @Valid @RequestBody request: PayrollCreationScheduleRequestDTO,
@@ -41,26 +40,13 @@ class PayrollController(
         return ResponseEntity.accepted().body(schedule)
     }
 
-    @PostMapping("/{employeeId}/payrolls/{payrollId}/wage-update-schedules")
+    @PostMapping("/{employeeId}/payrolls/{payrollId}/schedule-update")
     fun scheduleWageUpdate(
         @PathVariable employeeId: Long,
         @PathVariable payrollId: Long,
         @Valid @RequestBody request: PayrollWageUpdateScheduleRequestDTO,
-    ): ResponseEntity<PayrollScheduleDTO> {
-        val schedule = scheduleService.scheduleWageUpdate(employeeId, payrollId, request)
-            ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.accepted().body(schedule)
-    }
-
-    @PostMapping("/{employeeId}/payrolls/stale-deletion-schedules")
-    fun scheduleStaleDeletion(
-        @PathVariable employeeId: Long,
-        @Valid @RequestBody request: StalePayrollDeletionScheduleRequestDTO,
-    ): ResponseEntity<PayrollScheduleDTO> {
-        val schedule = scheduleService.scheduleStaleDeletion(employeeId, request)
-            ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.accepted().body(schedule)
-    }
+    ): ResponseEntity<PayrollScheduleDTO> =
+        ResponseEntity.accepted().body(scheduleService.scheduleWageUpdate(employeeId, payrollId, request))
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun invalidRequest(): ResponseEntity<Void> = ResponseEntity.badRequest().build()

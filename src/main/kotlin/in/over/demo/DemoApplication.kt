@@ -7,14 +7,14 @@ import org.springframework.boot.runApplication
 
 @OpenAPIDefinition(
 	info = Info(
-		title = "Time Record API",
-		description = "API for recording employee time in and time out events",
+		title = "Employee Event API",
+		description = "API for recording employee  events",
 		version = "v1",
 	),
 )
 @SpringBootApplication
-class TimeRecordApplication
+class DemoApplication
 
 fun main(args: Array<String>) {
-	runApplication<TimeRecordApplication>(*args)
+	runApplication<DemoApplication>(*args)
 }
