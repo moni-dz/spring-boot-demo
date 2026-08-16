@@ -1,6 +1,8 @@
 package `in`.over.demo.application.dto
 
+import java.time.Instant
+
 data class UpdateTimeRecordDTO(
-    val timeInEpoch: Long?,
-    val timeOutEpoch: Long?,
+    val timeIn: Instant?,
+    val timeOut: Instant?,
 )

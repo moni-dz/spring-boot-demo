@@ -15,28 +15,28 @@ employees:
 time_records:
   - id: 1
     employee_id: 1
-    time_in_epoch: 1767312000
-    time_out_epoch: 1767319200
+    time_in: "2026-01-02 00:00:00"
+    time_out: "2026-01-02 02:00:00"
   - id: 2
     employee_id: 1
-    time_in_epoch: 1767222000
-    time_out_epoch: 1767229200
+    time_in: "2025-12-31 23:00:00"
+    time_out: "2026-01-01 01:00:00"
   - id: 3
     employee_id: 1
-    time_in_epoch: 1767398400
-    time_out_epoch: "[null]"
+    time_in: "2026-01-03 00:00:00"
+    time_out: "[null]"
   - id: 4
     employee_id: 2
-    time_in_epoch: 1767312000
-    time_out_epoch: 1767315600
+    time_in: "2026-01-02 00:00:00"
+    time_out: "2026-01-02 01:00:00"
   - id: 5
     employee_id: 1
-    time_in_epoch: 1772697600
-    time_out_epoch: 1772706600
+    time_in: "2026-03-05 08:00:00"
+    time_out: "2026-03-05 10:30:00"
   - id: 6
     employee_id: 1
-    time_in_epoch: 1772703000
-    time_out_epoch: 1772708400
+    time_in: "2026-03-05 09:30:00"
+    time_out: "2026-03-05 11:00:00"
 
 payroll_records:
   - id: 1

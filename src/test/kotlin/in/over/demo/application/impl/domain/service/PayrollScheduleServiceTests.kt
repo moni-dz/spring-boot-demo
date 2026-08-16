@@ -147,8 +147,8 @@ class PayrollScheduleServiceTests : BaseServiceTest {
         timeRecordService.insert(
             TimeRecord(
                 employeeId = 1,
-                timeInEpoch = 1772708400,
-                timeOutEpoch = 1772712000,
+                timeIn = Instant.parse("2026-03-05T11:00:00Z"),
+                timeOut = Instant.parse("2026-03-05T12:00:00Z"),
             ),
         )
 

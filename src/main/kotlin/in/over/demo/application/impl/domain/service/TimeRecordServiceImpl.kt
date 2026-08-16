@@ -8,7 +8,7 @@ import `in`.over.demo.domain.repository.TimeRecordRepository
 import `in`.over.demo.domain.service.TimeRecordService
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-import kotlin.time.Clock
+import java.time.Instant
 
 @Service
 class TimeRecordServiceImpl(
@@ -34,12 +34,12 @@ class TimeRecordServiceImpl(
 
     override fun timeIn(employeeId: Long): TimeRecord? {
         if (!employeeRepository.existsById(employeeId)) return null
-        return repository.save(TimeRecord(employeeId = employeeId, timeInEpoch = Clock.System.now().epochSeconds))
+        return repository.save(TimeRecord(employeeId = employeeId, timeIn = Instant.now()))
     }
 
     override fun timeOut(employeeId: Long): TimeRecord? {
-        val record = repository.findFirstByEmployeeIdAndTimeOutEpochIsNullOrderByIdDesc(employeeId) ?: return null
-        record.timeOutEpoch = Clock.System.now().epochSeconds
+        val record = repository.findFirstByEmployeeIdAndTimeOutIsNullOrderByIdDesc(employeeId) ?: return null
+        record.timeOut = Instant.now()
         return repository.save(record)
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Duration
 import java.time.Instant
 
 @Service
@@ -61,28 +62,25 @@ class PayrollServiceImpl(
     }
 
     private fun workedSeconds(payroll: PayrollRecord): Long {
-        val intervalStart = payroll.intervalStart.epochSecond
-        val intervalEnd = payroll.intervalEnd.epochSecond
-
         val records = timeRecordRepository.findCompletedOverlapping(
             payroll.employeeId,
-            intervalStart,
-            intervalEnd,
+            payroll.intervalStart,
+            payroll.intervalEnd,
         )
 
         var total = 0L
-        var mergedStart: Long? = null
-        var mergedEnd = 0L
+        var mergedStart: Instant? = null
+        var mergedEnd = Instant.EPOCH
 
         for (record in records) {
-            val start = maxOf(record.timeInEpoch!!, intervalStart)
-            val end = minOf(record.timeOutEpoch!!, intervalEnd)
+            val start = maxOf(record.timeIn, payroll.intervalStart)
+            val end = minOf(record.timeOut!!, payroll.intervalEnd)
 
             if (mergedStart == null) {
                 mergedStart = start
                 mergedEnd = end
             } else if (start > mergedEnd) {
-                total = Math.addExact(total, mergedEnd - mergedStart)
+                total = Math.addExact(total, Duration.between(mergedStart, mergedEnd).seconds)
                 mergedStart = start
                 mergedEnd = end
             } else {
@@ -90,7 +88,7 @@ class PayrollServiceImpl(
             }
         }
 
-        return if (mergedStart == null) 0 else Math.addExact(total, mergedEnd - mergedStart)
+        return if (mergedStart == null) 0 else Math.addExact(total, Duration.between(mergedStart, mergedEnd).seconds)
     }
 
     private companion object {

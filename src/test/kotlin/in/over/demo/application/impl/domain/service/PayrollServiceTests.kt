@@ -42,8 +42,8 @@ class PayrollServiceTests : BaseServiceTest {
         timeRecordRepository.save(
             TimeRecord(
                 employeeId = 1,
-                timeInEpoch = 1767484800,
-                timeOutEpoch = 1767488400,
+                timeIn = Instant.parse("2026-01-04T00:00:00Z"),
+                timeOut = Instant.parse("2026-01-04T01:00:00Z"),
             ),
         )
         val updated = service.updateWage(1, 1)
