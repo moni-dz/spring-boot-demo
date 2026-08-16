@@ -12,10 +12,12 @@ class UpdatePayrollWageJob(
 ) : QuartzJobBean() {
     override fun executeInternal(context: JobExecutionContext) {
         val data = context.mergedJobDataMap
+
         val updated = payrollService.updateWage(
             data.getString(EMPLOYEE_ID).toLong(),
             data.getString(PAYROLL_ID).toLong(),
         )
+
         if (updated == null) throw JobExecutionException("Payroll record no longer exists")
     }
 

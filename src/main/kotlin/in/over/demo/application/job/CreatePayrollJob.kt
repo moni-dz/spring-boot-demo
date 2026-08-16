@@ -13,12 +13,14 @@ class CreatePayrollJob(
 ) : QuartzJobBean() {
     override fun executeInternal(context: JobExecutionContext) {
         val data = context.mergedJobDataMap
+
         val created = payrollService.createForInterval(
             data.getString(EMPLOYEE_ID).toLong(),
             Instant.parse(data.getString(INTERVAL_START)),
             Instant.parse(data.getString(INTERVAL_END)),
             data.getString(HOURLY_RATE).toBigDecimal(),
         )
+
         if (created == null) throw JobExecutionException("Employee no longer exists")
     }
 

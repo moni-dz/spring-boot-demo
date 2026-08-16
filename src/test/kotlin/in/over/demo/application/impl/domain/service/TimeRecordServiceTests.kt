@@ -1,9 +1,6 @@
 package `in`.over.demo.application.impl.domain.service
 
-import com.github.database.rider.core.api.configuration.DBUnit
-import com.github.database.rider.core.api.dataset.DataSet
-import com.github.database.rider.spring.api.DBRider
-import `in`.over.demo.MySqlTestConfiguration
+import `in`.over.demo.BaseServiceTest
 import `in`.over.demo.application.dto.UpdateTimeRecordDTO
 import `in`.over.demo.domain.model.TimeRecord
 import `in`.over.demo.domain.repository.TimeRecordRepository
@@ -11,7 +8,6 @@ import `in`.over.demo.domain.service.TimeRecordService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
 import org.springframework.dao.DataIntegrityViolationException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -20,12 +16,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 
-@DBRider
-@DBUnit(caseSensitiveTableNames = true, raiseExceptionOnCleanUp = true)
-@DataSet(value = ["datasets/time-records.yml"], cleanBefore = true)
 @SpringBootTest
-@Import(MySqlTestConfiguration::class)
-class TimeRecordServiceTests {
+class TimeRecordServiceTests : BaseServiceTest {
     @Autowired
     private lateinit var service: TimeRecordService
 

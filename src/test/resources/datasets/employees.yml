@@ -1,0 +1,77 @@
+employees:
+  - id: 1
+    last_name: Lacre
+    first_name: Lythe Marvin
+    middle_name: Lim
+  - id: 2
+    last_name: Lacre
+    first_name: Marvin
+    middle_name: "[null]"
+  - id: 3
+    last_name: Lim
+    first_name: Lacre
+    middle_name: "[null]"
+
+time_records:
+  - id: 1
+    employee_id: 1
+    time_in_epoch: 1767312000
+    time_out_epoch: 1767319200
+  - id: 2
+    employee_id: 1
+    time_in_epoch: 1767222000
+    time_out_epoch: 1767229200
+  - id: 3
+    employee_id: 1
+    time_in_epoch: 1767398400
+    time_out_epoch: "[null]"
+  - id: 4
+    employee_id: 2
+    time_in_epoch: 1767312000
+    time_out_epoch: 1767315600
+  - id: 5
+    employee_id: 1
+    time_in_epoch: 1772697600
+    time_out_epoch: 1772706600
+  - id: 6
+    employee_id: 1
+    time_in_epoch: 1772703000
+    time_out_epoch: 1772708400
+
+payroll_records:
+  - id: 1
+    employee_id: 1
+    interval_start: "2026-01-01 00:00:00"
+    interval_end: "2026-01-31 00:00:00"
+    hourly_rate: 100.0000
+    worked_seconds: 10800
+    wage_earned: 300.0000
+    created_at: "2026-02-01 00:00:00"
+    deleted_at: "[null]"
+  - id: 2
+    employee_id: 1
+    interval_start: "2025-01-01 00:00:00"
+    interval_end: "2025-01-31 00:00:00"
+    hourly_rate: 50.0000
+    worked_seconds: 0
+    wage_earned: 0.0000
+    created_at: "2025-02-01 00:00:00"
+    deleted_at: "[null]"
+  - id: 3
+    employee_id: 1
+    interval_start: "2024-01-01 00:00:00"
+    interval_end: "2024-01-31 00:00:00"
+    hourly_rate: 25.0000
+    worked_seconds: 0
+    wage_earned: 0.0000
+    created_at: "2024-02-01 00:00:00"
+    deleted_at: "2024-03-01 00:00:00"
+  - id: 4
+    employee_id: 2
+    interval_start: "2026-01-01 00:00:00"
+    interval_end: "2026-01-31 00:00:00"
+    hourly_rate: 75.0000
+    worked_seconds: 3600
+    wage_earned: 75.0000
+    created_at: "2026-02-01 00:00:00"
+    deleted_at: "[null]"

@@ -40,9 +40,7 @@ class EmployeeServiceImpl(
             firstName = request.firstName.trim(),
             middleName = request.middleName?.trim()?.ifEmpty { null },
         )
-        require(normalized.lastName.isNotEmpty() && normalized.lastName.length <= 100) { "invalid lastName" }
-        require(normalized.firstName.isNotEmpty() && normalized.firstName.length <= 100) { "invalid firstName" }
-        require(normalized.middleName == null || normalized.middleName.length <= 100) { "invalid middleName" }
+
         return normalized
     }
 }

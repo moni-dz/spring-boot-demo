@@ -15,13 +15,13 @@ import jakarta.persistence.Table
  */
 @Entity
 @Table(name = "time_records")
-data class TimeRecord(
+class TimeRecord(
     @field:Id
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     @field:Column(columnDefinition = "int")
     var id: Long = 0,
     @field:Column(name = "employee_id", nullable = false)
-    val employeeId: Long = 0,
+    var employeeId: Long = 0,
     @field:Column(name = "time_in_epoch", columnDefinition = "int unsigned")
     var timeInEpoch: Long? = null,
     @field:Column(name = "time_out_epoch", columnDefinition = "int unsigned")

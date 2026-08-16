@@ -11,12 +11,12 @@ import java.time.Instant
 
 @Entity
 @Table(name = "payroll_records")
-data class PayrollRecord(
+class PayrollRecord(
     @field:Id
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
     @field:Column(name = "employee_id", nullable = false)
-    val employeeId: Long = 0,
+    var employeeId: Long = 0,
     @field:Column(name = "interval_start", nullable = false)
     var intervalStart: Instant = Instant.EPOCH,
     @field:Column(name = "interval_end", nullable = false)
@@ -30,7 +30,7 @@ data class PayrollRecord(
     @field:Column(name = "wage_earned", nullable = false, precision = 38, scale = 4)
     var wageEarned: BigDecimal = BigDecimal.ZERO,
     @field:Column(name = "created_at", nullable = false)
-    val createdAt: Instant = Instant.EPOCH,
+    var createdAt: Instant = Instant.EPOCH,
     @field:Column(name = "deleted_at")
     var deletedAt: Instant? = null,
 ) {

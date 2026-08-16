@@ -9,7 +9,7 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "employees")
-data class Employee(
+class Employee(
     @field:Id
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,

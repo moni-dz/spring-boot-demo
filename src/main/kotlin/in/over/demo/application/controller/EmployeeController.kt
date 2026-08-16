@@ -4,6 +4,7 @@ import `in`.over.demo.application.dto.EmployeeDTO
 import `in`.over.demo.application.dto.EmployeeWriteDTO
 import `in`.over.demo.application.mapper.EmployeeMapper
 import `in`.over.demo.domain.service.EmployeeService
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
@@ -20,6 +21,7 @@ import java.net.URI
 
 @RestController
 @RequestMapping("/employee")
+@Tag(name = "Employees")
 class EmployeeController(
     private val service: EmployeeService,
     private val mapper: EmployeeMapper,

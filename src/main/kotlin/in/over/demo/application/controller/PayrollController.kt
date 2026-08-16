@@ -8,6 +8,7 @@ import `in`.over.demo.application.dto.StalePayrollDeletionScheduleRequestDTO
 import `in`.over.demo.application.mapper.PayrollRecordMapper
 import `in`.over.demo.domain.service.PayrollScheduleService
 import `in`.over.demo.domain.service.PayrollService
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee")
+@Tag(name = "Payrolls")
 class PayrollController(
     private val payrollService: PayrollService,
     private val scheduleService: PayrollScheduleService,

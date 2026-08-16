@@ -13,10 +13,12 @@ class SoftDeleteStalePayrollJob(
 ) : QuartzJobBean() {
     override fun executeInternal(context: JobExecutionContext) {
         val data = context.mergedJobDataMap
+
         val deleted = payrollService.softDeleteStale(
             data.getString(EMPLOYEE_ID).toLong(),
             Instant.parse(data.getString(STALE_BEFORE)),
         )
+
         if (deleted == null) throw JobExecutionException("Employee no longer exists")
     }
 
