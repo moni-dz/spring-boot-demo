@@ -5,4 +5,7 @@ data class EmployeeDTO(
     val lastName: String,
     val firstName: String,
     val middleName: String?,
+    val username: String,
+    val email: String,
+    val roles: List<RoleDTO>,
 )

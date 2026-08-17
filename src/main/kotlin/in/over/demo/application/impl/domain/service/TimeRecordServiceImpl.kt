@@ -2,6 +2,7 @@ package `in`.over.demo.application.impl.domain.service
 
 import `in`.over.demo.application.dto.UpdateTimeRecordDTO
 import `in`.over.demo.application.mapper.TimeRecordMapper
+import `in`.over.demo.application.security.CurrentEmployee
 import `in`.over.demo.domain.model.TimeRecord
 import `in`.over.demo.domain.repository.EmployeeRepository
 import `in`.over.demo.domain.repository.TimeRecordRepository
@@ -22,22 +23,26 @@ class TimeRecordServiceImpl(
 
     override fun update(id: Long, update: UpdateTimeRecordDTO): TimeRecord? {
         val record = repository.findById(id).orElse(null) ?: return null
+        CurrentEmployee.requireSelfOrAdmin(record.employeeId)
         mapper.updateTime(update, record)
         return repository.save(record)
     }
 
     override fun delete(id: Long): TimeRecord? {
         val record = repository.findById(id).orElse(null) ?: return null
+        CurrentEmployee.requireSelfOrAdmin(record.employeeId)
         repository.delete(record)
         return record
     }
 
     override fun timeIn(employeeId: Long): TimeRecord? {
+        CurrentEmployee.requireSelfOrAdmin(employeeId)
         if (!employeeRepository.existsById(employeeId)) return null
         return repository.save(TimeRecord(employeeId = employeeId, timeIn = Instant.now()))
     }
 
     override fun timeOut(employeeId: Long): TimeRecord? {
+        CurrentEmployee.requireSelfOrAdmin(employeeId)
         val record = repository.findFirstByEmployeeIdAndTimeOutIsNullOrderByIdDesc(employeeId) ?: return null
         record.timeOut = Instant.now()
         return repository.save(record)

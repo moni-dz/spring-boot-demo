@@ -26,9 +26,6 @@ class TimeRecordController(
     private val service: TimeRecordService,
     private val mapper: TimeRecordMapper,
 ) {
-    @GetMapping("/status")
-    fun health() = "Hello!"
-
     @GetMapping
     @ApiResponse(
         responseCode = "200",

@@ -31,7 +31,15 @@ class EmployeeServiceTests : BaseServiceTest {
         assertNull(service.delete(404))
         assertFailsWith<DataIntegrityViolationException> { service.delete(1) }
         assertFailsWith<DataIntegrityViolationException> {
-            service.create(EmployeeWriteDTO("Valid", "  "))
+            service.create(
+                EmployeeWriteDTO(
+                    lastName = "Valid",
+                    firstName = "  ",
+                    username = "testuser",
+                    email = "test@example.com",
+                    password = "Password123!",
+                ),
+            )
         }
     }
 }

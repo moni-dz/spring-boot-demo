@@ -3,14 +3,23 @@ employees:
     last_name: Lacre
     first_name: Lythe Marvin
     middle_name: Lim
+    username: lythe
+    email: lythe@example.com
+    password_hash: "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5jkPdz6PGwB1IKq2ZWfaKPRQnvLI2"
   - id: 2
     last_name: Lacre
     first_name: Marvin
     middle_name: "[null]"
+    username: marvin
+    email: marvin@example.com
+    password_hash: "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5jkPdz6PGwB1IKq2ZWfaKPRQnvLI2"
   - id: 3
     last_name: Lim
     first_name: Lacre
     middle_name: "[null]"
+    username: lacre
+    email: lacre@example.com
+    password_hash: "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5jkPdz6PGwB1IKq2ZWfaKPRQnvLI2"
 
 time_records:
   - id: 1

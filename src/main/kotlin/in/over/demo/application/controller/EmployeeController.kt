@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -60,4 +61,7 @@ class EmployeeController(
         } ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(employee))
     }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun invalidRequest(): ResponseEntity<Void> = ResponseEntity.badRequest().build()
 }
