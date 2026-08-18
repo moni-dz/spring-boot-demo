@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -27,6 +28,7 @@ class TimeRecordController(
     private val mapper: TimeRecordMapper,
 ) {
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @ApiResponse(
         responseCode = "200",
         description = "Time records",
@@ -40,12 +42,14 @@ class TimeRecordController(
     fun listRecords(): List<TimeRecordDTO> = mapper.toDtos(service.getRecords())
 
     @DeleteMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun deleteRecord(@RequestParam id: Long): ResponseEntity<TimeRecordDTO> {
         val deleted = service.delete(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(deleted))
     }
 
     @PutMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun editRecord(
         @RequestParam id: Long,
         @RequestBody update: UpdateTimeRecordDTO,
@@ -56,12 +60,14 @@ class TimeRecordController(
 
 
     @PostMapping("/time-in")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     fun timeIn(@RequestParam id: Long): ResponseEntity<TimeRecordDTO> {
         val timedIn = service.timeIn(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(timedIn))
     }
 
     @PostMapping("/time-out")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     fun timeOut(@RequestParam id: Long): ResponseEntity<TimeRecordDTO> {
         val timedOut = service.timeOut(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(timedOut))

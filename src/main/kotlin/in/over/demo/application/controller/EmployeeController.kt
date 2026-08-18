@@ -9,6 +9,7 @@ import jakarta.validation.Valid
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,15 +29,18 @@ class EmployeeController(
     private val mapper: EmployeeMapper,
 ) {
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun list(): List<EmployeeDTO> = mapper.toDtos(service.getEmployees())
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun get(@PathVariable id: Long): ResponseEntity<EmployeeDTO> {
         val employee = service.getEmployee(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(employee))
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     fun create(@Valid @RequestBody request: EmployeeWriteDTO): ResponseEntity<EmployeeDTO> {
         val employee = service.create(request)
         return ResponseEntity.created(URI.create("/employee/${employee.id}"))
@@ -44,6 +48,7 @@ class EmployeeController(
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     fun update(
         @PathVariable id: Long,
         @Valid @RequestBody request: EmployeeWriteDTO,
@@ -53,6 +58,7 @@ class EmployeeController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     fun delete(@PathVariable id: Long): ResponseEntity<EmployeeDTO> {
         val employee = try {
             service.delete(id)
