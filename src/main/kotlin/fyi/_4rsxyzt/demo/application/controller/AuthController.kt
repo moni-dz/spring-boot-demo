@@ -1,8 +1,8 @@
 package fyi._4rsxyzt.demo.application.controller
 
 import fyi._4rsxyzt.demo.application.dto.LoginRequestDTO
+import fyi._4rsxyzt.demo.application.security.EmployeeUserDetails
 import fyi._4rsxyzt.demo.application.security.JWTService
-import fyi._4rsxyzt.demo.domain.repository.EmployeeRepository
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,16 +22,20 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/auth")
 @Tag(name = "Auth")
 class AuthController(
-    private val employeeRepository: EmployeeRepository,
-    private val passwordEncoder: PasswordEncoder,
+    private val authenticationManager: AuthenticationManager,
     private val jwtService: JWTService,
     @Value($$"${jwt.cookie-name}") private val cookieName: String,
     @Value($$"${jwt.expiration-minutes}") private val expirationMinutes: Long,
 ) {
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequestDTO, response: HttpServletResponse): ResponseEntity<Void> {
-        val employee = employeeRepository.findByUsername(request.username)
-        if (employee == null || !passwordEncoder.matches(request.password, employee.passwordHash)) {
+        val employee = try {
+            val auth = authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken(request.username, request.password),
+            )
+
+            (auth.principal as EmployeeUserDetails).employee
+        } catch (_: BadCredentialsException) {
             return ResponseEntity.status(401).build()
         }
 

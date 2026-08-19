@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
 @Configuration
 class NatsConfig {
     @Bean(destroyMethod = "close")
-    fun natsConnection(@Value("\${nats.url}") url: String): Connection = Nats.connect(url)
+    fun natsConnection(@Value($$"${nats.url}") url: String): Connection = Nats.connect(url)
 }
 
 @Component
