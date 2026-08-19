@@ -1,4 +1,10 @@
 services:
+  nats:
+    image: nats:2-alpine
+    ports:
+      - "${NATS_PORT:-4222}:4222"
+      - "${NATS_MONITOR_PORT:-8222}:8222"
+
   mysql:
     image: mysql:9.7.1
     environment:

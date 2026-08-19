@@ -3,6 +3,7 @@ package `in`.over.demo.application.controller
 import `in`.over.demo.application.dto.RoleDTO
 import `in`.over.demo.application.dto.RoleWriteDTO
 import `in`.over.demo.application.mapper.RoleMapper
+import `in`.over.demo.application.nats.NatsEventPublisher
 import `in`.over.demo.domain.service.RoleService
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -27,6 +28,7 @@ import java.net.URI
 class RoleController(
     private val service: RoleService,
     private val mapper: RoleMapper,
+    private val events: NatsEventPublisher,
 ) {
     @GetMapping
     fun list(): List<RoleDTO> = mapper.toDtos(service.getRoles())
@@ -40,12 +42,14 @@ class RoleController(
     @PostMapping
     fun create(@Valid @RequestBody request: RoleWriteDTO): ResponseEntity<RoleDTO> {
         val role = service.create(request)
+        events.publish("role", "created", role.id)
         return ResponseEntity.created(URI.create("/role/${role.id}")).body(mapper.toDto(role))
     }
 
     @PutMapping("/{id}")
     fun update(@PathVariable id: Long, @Valid @RequestBody request: RoleWriteDTO): ResponseEntity<RoleDTO> {
         val role = service.update(id, request) ?: return ResponseEntity.notFound().build()
+        events.publish("role", "updated", role.id)
         return ResponseEntity.ok(mapper.toDto(role))
     }
 
@@ -56,6 +60,8 @@ class RoleController(
         } catch (_: DataIntegrityViolationException) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build()
         } ?: return ResponseEntity.notFound().build()
+
+        events.publish("role", "deleted", role.id)
         return ResponseEntity.ok(mapper.toDto(role))
     }
 }

@@ -31,6 +31,7 @@
 		<kotlin.version>2.3.21</kotlin.version>
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<springdoc.version>3.0.3</springdoc.version>
+		<jnats.version>2.20.4</jnats.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -118,6 +119,11 @@
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.nats</groupId>
+			<artifactId>jnats</artifactId>
+			<version>${jnats.version}</version>
 		</dependency>
     </dependencies>
 

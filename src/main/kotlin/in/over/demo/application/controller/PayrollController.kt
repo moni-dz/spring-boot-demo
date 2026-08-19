@@ -5,6 +5,7 @@ import `in`.over.demo.application.dto.PayrollRecordDTO
 import `in`.over.demo.application.dto.PayrollScheduleDTO
 import `in`.over.demo.application.dto.PayrollWageUpdateScheduleRequestDTO
 import `in`.over.demo.application.mapper.PayrollRecordMapper
+import `in`.over.demo.application.nats.NatsEventPublisher
 import `in`.over.demo.domain.service.PayrollScheduleService
 import `in`.over.demo.domain.service.PayrollService
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -27,6 +28,7 @@ class PayrollController(
     private val payrollService: PayrollService,
     private val scheduleService: PayrollScheduleService,
     private val mapper: PayrollRecordMapper,
+    private val events: NatsEventPublisher,
 ) {
     @GetMapping("/{employeeId}/payrolls")
     fun list(@PathVariable employeeId: Long): List<PayrollRecordDTO> =
@@ -39,6 +41,7 @@ class PayrollController(
     ): ResponseEntity<PayrollScheduleDTO> {
         val schedule = scheduleService.scheduleCreation(employeeId, request)
             ?: return ResponseEntity.notFound().build()
+        events.publish("payroll", "created", schedule.scheduleId)
         return ResponseEntity.accepted().body(schedule)
     }
 
@@ -47,8 +50,11 @@ class PayrollController(
         @PathVariable employeeId: Long,
         @PathVariable payrollId: Long,
         @Valid @RequestBody request: PayrollWageUpdateScheduleRequestDTO,
-    ): ResponseEntity<PayrollScheduleDTO> =
-        ResponseEntity.accepted().body(scheduleService.scheduleWageUpdate(employeeId, payrollId, request))
+    ): ResponseEntity<PayrollScheduleDTO> {
+        val schedule = scheduleService.scheduleWageUpdate(employeeId, payrollId, request)
+        events.publish("payroll", "updated", schedule.scheduleId)
+        return ResponseEntity.accepted().body(schedule)
+    }
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun invalidRequest(): ResponseEntity<Void> = ResponseEntity.badRequest().build()

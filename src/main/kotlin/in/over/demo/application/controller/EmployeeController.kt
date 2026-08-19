@@ -3,6 +3,7 @@ package `in`.over.demo.application.controller
 import `in`.over.demo.application.dto.EmployeeDTO
 import `in`.over.demo.application.dto.EmployeeWriteDTO
 import `in`.over.demo.application.mapper.EmployeeMapper
+import `in`.over.demo.application.nats.NatsEventPublisher
 import `in`.over.demo.domain.service.EmployeeService
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -27,6 +28,7 @@ import java.net.URI
 class EmployeeController(
     private val service: EmployeeService,
     private val mapper: EmployeeMapper,
+    private val events: NatsEventPublisher,
 ) {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -43,6 +45,7 @@ class EmployeeController(
     @PreAuthorize("hasRole('ADMIN')")
     fun create(@Valid @RequestBody request: EmployeeWriteDTO): ResponseEntity<EmployeeDTO> {
         val employee = service.create(request)
+        events.publish("employee", "created", employee.id)
         return ResponseEntity.created(URI.create("/employee/${employee.id}"))
             .body(mapper.toDto(employee))
     }
@@ -54,6 +57,7 @@ class EmployeeController(
         @Valid @RequestBody request: EmployeeWriteDTO,
     ): ResponseEntity<EmployeeDTO> {
         val employee = service.update(id, request) ?: return ResponseEntity.notFound().build()
+        events.publish("employee", "updated", employee.id)
         return ResponseEntity.ok(mapper.toDto(employee))
     }
 
@@ -65,6 +69,8 @@ class EmployeeController(
         } catch (_: DataIntegrityViolationException) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build()
         } ?: return ResponseEntity.notFound().build()
+
+        events.publish("employee", "deleted", employee.id)
         return ResponseEntity.ok(mapper.toDto(employee))
     }
 
