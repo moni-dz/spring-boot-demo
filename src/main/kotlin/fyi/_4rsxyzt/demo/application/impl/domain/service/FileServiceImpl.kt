@@ -5,6 +5,8 @@ import fyi._4rsxyzt.demo.domain.model.StoredFile
 import fyi._4rsxyzt.demo.domain.repository.FileRepository
 import fyi._4rsxyzt.demo.domain.service.FileService
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
@@ -25,9 +27,8 @@ class FileServiceImpl(
     private val s3: S3Client,
     @Value($$"${minio.bucket-name}") private val bucket: String,
 ) : FileService {
-    init {
-        ensureBucket()
-    }
+    @EventListener(ApplicationReadyEvent::class)
+    fun ensureBucketOnStartup() = ensureBucket()
 
     override fun getFiles(): List<StoredFile> = repository.findAll(Sort.by("id"))
 
