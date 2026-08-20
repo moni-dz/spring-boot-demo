@@ -45,12 +45,8 @@ class PayrollServiceImpl(
     }
 
     @Transactional
-    override fun softDeleteStale(employeeId: Long, staleBefore: Instant): Int? {
-        val deletedAt = Instant.now()
-        val records = repository.findAllByEmployeeIdAndDeletedAtIsNullAndIntervalEndBefore(employeeId, staleBefore)
-        records.forEach { it.deletedAt = deletedAt }
-        return records.size
-    }
+    override fun softDeleteStale(staleBefore: Instant): Int =
+        repository.softDeleteStale(staleBefore, Instant.now())
 
     private fun recalculate(record: PayrollRecord): PayrollRecord {
         require(record.calculationVersion == PayrollRecord.TIME_DERIVED_CALCULATION) {

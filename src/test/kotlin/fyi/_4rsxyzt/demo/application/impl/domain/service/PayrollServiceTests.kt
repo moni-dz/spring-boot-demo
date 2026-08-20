@@ -86,10 +86,10 @@ class PayrollServiceTests : BaseServiceTest {
 
     @Test
     fun `soft delete marks only active stale records`() {
-        assertEquals(1, service.softDeleteStale(1, Instant.parse("2025-06-01T00:00:00Z")))
+        assertEquals(1, service.softDeleteStale(Instant.parse("2025-06-01T00:00:00Z")))
         assertEquals(listOf(1L), service.list(1).map { it.id })
         assertNotNull(repository.findById(2).orElseThrow().deletedAt)
         assertTrue(repository.existsById(2))
-        assertEquals(0, service.softDeleteStale(404, Instant.now()))
+        assertEquals(0, service.softDeleteStale(Instant.parse("2025-06-01T00:00:00Z")))
     }
 }

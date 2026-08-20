@@ -14,5 +14,5 @@ interface PayrollService {
         hourlyRate: BigDecimal,
     ): PayrollRecord?
     fun updateWage(employeeId: Long, payrollId: Long): PayrollRecord?
-    fun softDeleteStale(employeeId: Long, staleBefore: Instant): Int?
+    fun softDeleteStale(staleBefore: Instant): Int
 }
