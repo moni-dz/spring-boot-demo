@@ -50,6 +50,7 @@ class PayrollController(
         @PathVariable payrollId: Long,
         @Valid @RequestBody request: PayrollWageUpdateScheduleRequestDTO,
     ): ResponseEntity<PayrollScheduleDTO> {
+        payrollService.get(employeeId, payrollId) ?: return ResponseEntity.notFound().build()
         val schedule = scheduleService.scheduleWageUpdate(employeeId, payrollId, request)
         events.publish("payroll", "updated", schedule.scheduleId)
         return ResponseEntity.accepted().body(schedule)

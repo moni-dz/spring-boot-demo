@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -67,7 +68,7 @@ class TimeRecordController(
     @PreAuthorize("hasRole('ADMIN')")
     fun editRecord(
         @RequestParam id: Long,
-        @RequestBody update: UpdateTimeRecordDTO,
+        @Valid @RequestBody update: UpdateTimeRecordDTO,
     ): ResponseEntity<TimeRecordDTO> {
         val edited = service.update(id, update) ?: return ResponseEntity.notFound().build()
         events.publish("time-record", "updated", edited.id)
