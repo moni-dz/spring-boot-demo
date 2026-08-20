@@ -3,9 +3,11 @@ package fyi._4rsxyzt.demo.application.impl.domain.service
 import fyi._4rsxyzt.demo.application.dto.UpdateTimeRecordDTO
 import fyi._4rsxyzt.demo.application.mapper.TimeRecordMapper
 import fyi._4rsxyzt.demo.application.security.CurrentEmployee
+import fyi._4rsxyzt.demo.domain.model.StoredFile
 import fyi._4rsxyzt.demo.domain.model.TimeRecord
 import fyi._4rsxyzt.demo.domain.repository.EmployeeRepository
 import fyi._4rsxyzt.demo.domain.repository.TimeRecordRepository
+import fyi._4rsxyzt.demo.domain.service.FileService
 import fyi._4rsxyzt.demo.domain.service.TimeRecordService
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -16,8 +18,17 @@ class TimeRecordServiceImpl(
     private val repository: TimeRecordRepository,
     private val employeeRepository: EmployeeRepository,
     private val mapper: TimeRecordMapper,
+    private val fileService: FileService,
 ) : TimeRecordService {
     override fun getRecords(): List<TimeRecord> = repository.findAll(Sort.by("id"))
+
+    override fun exportCsv(): StoredFile {
+        val csv = buildString {
+            appendLine("id,employee_id,time_in,time_out")
+            getRecords().forEach { appendLine("${it.id},${it.employeeId},${it.timeIn},${it.timeOut ?: ""}") }
+        }
+        return fileService.upload("time-records-${Instant.now()}.csv", "text/csv", csv.toByteArray())
+    }
 
     override fun insert(record: TimeRecord): TimeRecord = repository.save(record)
 

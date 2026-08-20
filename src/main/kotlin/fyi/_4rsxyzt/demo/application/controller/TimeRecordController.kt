@@ -1,7 +1,9 @@
 package fyi._4rsxyzt.demo.application.controller
 
+import fyi._4rsxyzt.demo.application.dto.FileDTO
 import fyi._4rsxyzt.demo.application.dto.TimeRecordDTO
 import fyi._4rsxyzt.demo.application.dto.UpdateTimeRecordDTO
+import fyi._4rsxyzt.demo.application.mapper.FileMapper
 import fyi._4rsxyzt.demo.application.mapper.TimeRecordMapper
 import fyi._4rsxyzt.demo.application.nats.NatsEventPublisher
 import fyi._4rsxyzt.demo.domain.service.TimeRecordService
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.net.URI
 
 @RestController
 @RequestMapping("/records")
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController
 class TimeRecordController(
     private val service: TimeRecordService,
     private val mapper: TimeRecordMapper,
+    private val fileMapper: FileMapper,
     private val events: NatsEventPublisher,
 ) {
     @GetMapping
@@ -42,6 +46,14 @@ class TimeRecordController(
         ],
     )
     fun listRecords(): List<TimeRecordDTO> = mapper.toDtos(service.getRecords())
+
+    @PostMapping("/export")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun exportRecords(): ResponseEntity<FileDTO> {
+        val stored = service.exportCsv()
+        events.publish("file", "created", stored.id)
+        return ResponseEntity.created(URI.create("/files/${stored.id}")).body(fileMapper.toDto(stored))
+    }
 
     @DeleteMapping
     @PreAuthorize("hasRole('ADMIN')")

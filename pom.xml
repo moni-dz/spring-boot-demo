@@ -32,6 +32,7 @@
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<springdoc.version>3.0.3</springdoc.version>
 		<jnats.version>2.20.4</jnats.version>
+		<awssdk.version>2.32.0</awssdk.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -124,6 +125,11 @@
 			<groupId>io.nats</groupId>
 			<artifactId>jnats</artifactId>
 			<version>${jnats.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>${awssdk.version}</version>
 		</dependency>
     </dependencies>
 
