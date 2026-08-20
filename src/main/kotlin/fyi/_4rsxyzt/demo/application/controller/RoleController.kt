@@ -7,8 +7,6 @@ import fyi._4rsxyzt.demo.application.nats.NatsEventPublisher
 import fyi._4rsxyzt.demo.domain.service.RoleService
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -55,12 +53,7 @@ class RoleController(
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long): ResponseEntity<RoleDTO> {
-        val role = try {
-            service.delete(id)
-        } catch (_: DataIntegrityViolationException) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build()
-        } ?: return ResponseEntity.notFound().build()
-
+        val role = service.delete(id) ?: return ResponseEntity.notFound().build()
         events.publish("role", "deleted", role.id)
         return ResponseEntity.ok(mapper.toDto(role))
     }

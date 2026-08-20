@@ -7,12 +7,9 @@ import fyi._4rsxyzt.demo.application.nats.NatsEventPublisher
 import fyi._4rsxyzt.demo.domain.service.EmployeeService
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -64,16 +61,8 @@ class EmployeeController(
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     fun delete(@PathVariable id: Long): ResponseEntity<EmployeeDTO> {
-        val employee = try {
-            service.delete(id)
-        } catch (_: DataIntegrityViolationException) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build()
-        } ?: return ResponseEntity.notFound().build()
-
+        val employee = service.delete(id) ?: return ResponseEntity.notFound().build()
         events.publish("employee", "deleted", employee.id)
         return ResponseEntity.ok(mapper.toDto(employee))
     }
-
-    @ExceptionHandler(IllegalArgumentException::class)
-    fun invalidRequest(): ResponseEntity<Void> = ResponseEntity.badRequest().build()
 }
