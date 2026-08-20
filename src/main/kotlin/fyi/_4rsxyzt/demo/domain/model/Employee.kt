@@ -30,7 +30,7 @@ class Employee(
     var email: String = "",
     @field:Column(name = "password_hash", nullable = false, length = 255)
     var passwordHash: String = "",
-    @field:ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
+    @field:ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     @field:JoinTable(
         name = "employee_roles",
         joinColumns = [JoinColumn(name = "employee_id")],
