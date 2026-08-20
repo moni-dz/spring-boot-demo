@@ -85,11 +85,7 @@ class FileServiceImpl(
         return existing
     }
 
-    private fun requireOwnerOrAdmin(ownerId: Long) {
-        if (!CurrentEmployee.isAdmin() && CurrentEmployee.get()?.id != ownerId) {
-            throw AccessDeniedException("not allowed to modify another employee's file")
-        }
-    }
+    private fun requireOwnerOrAdmin(ownerId: Long) = CurrentEmployee.requireSelfOrAdmin(ownerId, "file")
 
     private fun putObject(key: String, contentType: String?, body: RequestBody) {
         s3.putObject(
