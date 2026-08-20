@@ -76,6 +76,7 @@ class PayrollServiceImpl(
 
         for (record in records) {
             val start = maxOf(record.timeIn, payroll.intervalStart)
+            // timeOut is guaranteed non-null by the TimeOutIsNotNull repo query above
             val end = minOf(record.timeOut!!, payroll.intervalEnd)
 
             if (mergedStart == null) {
