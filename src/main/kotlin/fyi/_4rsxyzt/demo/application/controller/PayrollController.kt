@@ -8,6 +8,8 @@ import fyi._4rsxyzt.demo.application.mapper.PayrollRecordMapper
 import fyi._4rsxyzt.demo.application.nats.NatsEventPublisher
 import fyi._4rsxyzt.demo.domain.service.PayrollScheduleService
 import fyi._4rsxyzt.demo.domain.service.PayrollService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -30,10 +32,14 @@ class PayrollController(
     private val events: NatsEventPublisher,
 ) {
     @GetMapping("/{employeeId}/payrolls")
+    @Operation(summary = "List payroll records for an employee", description = "Excludes soft-deleted records.")
     fun list(@PathVariable employeeId: Long): List<PayrollRecordDTO> =
         mapper.toDtos(payrollService.list(employeeId))
 
     @PostMapping("/{employeeId}/payrolls/schedule-create")
+    @Operation(summary = "Schedule payroll creation", description = "Runs asynchronously via Quartz at executeAt.")
+    @ApiResponse(responseCode = "202", description = "Job scheduled")
+    @ApiResponse(responseCode = "404", description = "Employee not found")
     fun scheduleCreation(
         @PathVariable employeeId: Long,
         @Valid @RequestBody request: PayrollCreationScheduleRequestDTO,
@@ -45,6 +51,12 @@ class PayrollController(
     }
 
     @PostMapping("/{employeeId}/payrolls/{payrollId}/schedule-update")
+    @Operation(
+        summary = "Schedule a payroll wage recalculation",
+        description = "Runs asynchronously via Quartz at executeAt.",
+    )
+    @ApiResponse(responseCode = "202", description = "Job scheduled")
+    @ApiResponse(responseCode = "404", description = "Payroll record not found")
     fun scheduleWageUpdate(
         @PathVariable employeeId: Long,
         @PathVariable payrollId: Long,

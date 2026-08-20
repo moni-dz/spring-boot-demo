@@ -4,6 +4,8 @@ import fyi._4rsxyzt.demo.application.dto.FileDTO
 import fyi._4rsxyzt.demo.application.mapper.FileMapper
 import fyi._4rsxyzt.demo.application.nats.NatsEventPublisher
 import fyi._4rsxyzt.demo.domain.service.FileService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -28,10 +30,13 @@ class FileController(
 ) {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "List files", description = "Admin only.")
     fun list(): List<FileDTO> = mapper.toDtos(service.getFiles())
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Get file metadata by id", description = "Uploader or admin.")
+    @ApiResponse(responseCode = "404", description = "File not found")
     fun get(@PathVariable id: Long): ResponseEntity<FileDTO> {
         val stored = service.getFile(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(stored))
@@ -39,6 +44,9 @@ class FileController(
 
     @PostMapping(consumes = ["multipart/form-data"])
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Upload a file")
+    @ApiResponse(responseCode = "201", description = "File uploaded")
+    @ApiResponse(responseCode = "400", description = "File is empty")
     fun upload(@RequestParam("file") file: MultipartFile): ResponseEntity<FileDTO> {
         val stored = service.upload(file)
         events.publish("file", "created", stored.id)
@@ -47,6 +55,9 @@ class FileController(
 
     @PutMapping("/{id}", consumes = ["multipart/form-data"])
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Replace a file's contents", description = "Uploader or admin.")
+    @ApiResponse(responseCode = "400", description = "File is empty")
+    @ApiResponse(responseCode = "404", description = "File not found")
     fun update(@PathVariable id: Long, @RequestParam("file") file: MultipartFile): ResponseEntity<FileDTO> {
         val stored = service.update(id, file) ?: return ResponseEntity.notFound().build()
         events.publish("file", "updated", stored.id)
@@ -55,6 +66,8 @@ class FileController(
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Delete a file", description = "Uploader or admin.")
+    @ApiResponse(responseCode = "404", description = "File not found")
     fun delete(@PathVariable id: Long): ResponseEntity<FileDTO> {
         val stored = service.delete(id) ?: return ResponseEntity.notFound().build()
         events.publish("file", "deleted", stored.id)

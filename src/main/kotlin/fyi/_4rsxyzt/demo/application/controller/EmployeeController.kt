@@ -5,6 +5,8 @@ import fyi._4rsxyzt.demo.application.dto.EmployeeWriteDTO
 import fyi._4rsxyzt.demo.application.mapper.EmployeeMapper
 import fyi._4rsxyzt.demo.application.nats.NatsEventPublisher
 import fyi._4rsxyzt.demo.domain.service.EmployeeService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -29,10 +31,13 @@ class EmployeeController(
 ) {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "List employees", description = "Admin only.")
     fun list(): List<EmployeeDTO> = mapper.toDtos(service.getEmployees())
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get an employee by id", description = "Admin only.")
+    @ApiResponse(responseCode = "404", description = "Employee not found")
     fun get(@PathVariable id: Long): ResponseEntity<EmployeeDTO> {
         val employee = service.getEmployee(id) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(mapper.toDto(employee))
@@ -40,6 +45,11 @@ class EmployeeController(
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Create an employee",
+        description = "Admin only. password is required on create; roleIds must reference existing roles.",
+    )
+    @ApiResponse(responseCode = "201", description = "Employee created")
     fun create(@Valid @RequestBody request: EmployeeWriteDTO): ResponseEntity<EmployeeDTO> {
         val employee = service.create(request)
         events.publish("employee", "created", employee.id)
@@ -49,6 +59,8 @@ class EmployeeController(
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Update an employee", description = "Self or admin. Only admins may change roleIds.")
+    @ApiResponse(responseCode = "404", description = "Employee not found")
     fun update(
         @PathVariable id: Long,
         @Valid @RequestBody request: EmployeeWriteDTO,
@@ -60,6 +72,9 @@ class EmployeeController(
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete an employee", description = "Admin only.")
+    @ApiResponse(responseCode = "404", description = "Employee not found")
+    @ApiResponse(responseCode = "409", description = "Employee still referenced by payroll/time/file records")
     fun delete(@PathVariable id: Long): ResponseEntity<EmployeeDTO> {
         val employee = service.delete(id) ?: return ResponseEntity.notFound().build()
         events.publish("employee", "deleted", employee.id)
