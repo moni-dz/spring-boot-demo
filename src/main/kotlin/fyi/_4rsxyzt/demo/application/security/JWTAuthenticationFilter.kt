@@ -20,7 +20,7 @@ class JWTAuthenticationFilter(
         val decoded = token?.let(jwtService::verify)
 
         if (decoded != null) {
-            val authorities = decoded.getClaim("roles").asList(String::class.java)
+            val authorities = decoded.getClaim("roles").asList(String::class.java).orEmpty()
                 .map { SimpleGrantedAuthority("ROLE_$it") }
             val principal = AuthenticatedEmployee(decoded.getClaim("employeeId").asLong(), decoded.subject)
 
