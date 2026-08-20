@@ -11,6 +11,7 @@ import fyi._4rsxyzt.demo.domain.service.FileService
 import fyi._4rsxyzt.demo.domain.service.TimeRecordService
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 @Service
@@ -32,6 +33,7 @@ class TimeRecordServiceImpl(
 
     override fun insert(record: TimeRecord): TimeRecord = repository.save(record)
 
+    @Transactional
     override fun update(id: Long, update: UpdateTimeRecordDTO): TimeRecord? {
         val record = repository.findById(id).orElse(null) ?: return null
         CurrentEmployee.requireSelfOrAdmin(record.employeeId)
@@ -39,6 +41,7 @@ class TimeRecordServiceImpl(
         return repository.save(record)
     }
 
+    @Transactional
     override fun delete(id: Long): TimeRecord? {
         val record = repository.findById(id).orElse(null) ?: return null
         CurrentEmployee.requireSelfOrAdmin(record.employeeId)
@@ -46,12 +49,14 @@ class TimeRecordServiceImpl(
         return record
     }
 
+    @Transactional
     override fun timeIn(employeeId: Long): TimeRecord? {
         CurrentEmployee.requireSelfOrAdmin(employeeId)
         if (!employeeRepository.existsById(employeeId)) return null
         return repository.save(TimeRecord(employeeId = employeeId, timeIn = Instant.now()))
     }
 
+    @Transactional
     override fun timeOut(employeeId: Long): TimeRecord? {
         CurrentEmployee.requireSelfOrAdmin(employeeId)
         val record = repository.findFirstByEmployeeIdAndTimeOutIsNullOrderByIdDesc(employeeId) ?: return null

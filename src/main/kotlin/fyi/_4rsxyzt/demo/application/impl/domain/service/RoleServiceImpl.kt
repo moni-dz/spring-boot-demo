@@ -18,8 +18,10 @@ class RoleServiceImpl(
 
     override fun getRole(id: Long): Role? = repository.findById(id).orElse(null)
 
+    @Transactional
     override fun create(request: RoleWriteDTO): Role = repository.save(mapper.toModel(normalize(request)))
 
+    @Transactional
     override fun update(id: Long, request: RoleWriteDTO): Role? {
         val role = getRole(id) ?: return null
         mapper.update(normalize(request), role)

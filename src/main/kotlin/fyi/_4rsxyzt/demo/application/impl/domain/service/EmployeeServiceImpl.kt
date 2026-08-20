@@ -24,6 +24,7 @@ class EmployeeServiceImpl(
 
     override fun getEmployee(id: Long): Employee? = repository.findById(id).orElse(null)
 
+    @Transactional
     override fun create(request: EmployeeWriteDTO): Employee {
         val normalized = normalize(request)
         val password = normalized.password?.takeIf { it.isNotBlank() } ?: throw IllegalArgumentException("password is required")
@@ -35,6 +36,7 @@ class EmployeeServiceImpl(
         return repository.save(employee)
     }
 
+    @Transactional
     override fun update(id: Long, request: EmployeeWriteDTO): Employee? {
         CurrentEmployee.requireSelfOrAdmin(id)
         val employee = getEmployee(id) ?: return null
