@@ -34,6 +34,12 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                it.requestMatchers(
+                    HttpMethod.GET,
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                ).permitAll()
                 it.anyRequest().authenticated()
             }
             .exceptionHandling { it.authenticationEntryPoint { _, response, _ -> response.sendError(401) } }
