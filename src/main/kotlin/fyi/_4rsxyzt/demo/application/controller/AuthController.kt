@@ -11,8 +11,8 @@ import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -35,7 +35,7 @@ class AuthController(
             )
 
             (auth.principal as EmployeeUserDetails).employee
-        } catch (_: BadCredentialsException) {
+        } catch (_: AuthenticationException) {
             return ResponseEntity.status(401).build()
         }
 

@@ -31,6 +31,7 @@ class RoleServiceImpl(
     @Transactional
     override fun delete(id: Long): Role? {
         val role = getRole(id) ?: return null
+        require(role.name != Role.ADMIN && role.name != Role.USER) { "built-in roles cannot be deleted" }
         repository.delete(role)
         repository.flush()
         return role

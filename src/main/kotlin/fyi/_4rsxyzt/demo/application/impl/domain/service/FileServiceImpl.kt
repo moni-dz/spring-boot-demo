@@ -39,6 +39,7 @@ class FileServiceImpl(
     }
 
     override fun upload(file: MultipartFile): StoredFile {
+        require(!file.isEmpty) { "file must not be empty" }
         val key = "${UUID.randomUUID()}${extensionOf(file.originalFilename)}"
         putObject(key, file.contentType, RequestBody.fromInputStream(file.inputStream, file.size))
         return saveStored(key, file.originalFilename ?: key, file.contentType ?: "application/octet-stream", file.size)
@@ -65,6 +66,7 @@ class FileServiceImpl(
     }
 
     override fun update(id: Long, file: MultipartFile): StoredFile? {
+        require(!file.isEmpty) { "file must not be empty" }
         val existing = repository.findById(id).orElse(null) ?: return null
         requireOwnerOrAdmin(existing.uploadedBy)
 
